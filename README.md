@@ -5,12 +5,16 @@ In "MainMethod.cs", there are a number of useful computations contained in diffe
 the desired computation. 
 
 The primary function of the code is provided by the function YoungToPoly(part, smallestDegree), which given a partition of n (a list of decreasing positive integers
-with sum n) returns an infinite power series in q^{-1} representing the stable multiplicity of the family of irreducible partitions given by "part" in the
-cohomology of complex configuration space. The infinite power series is expanded out to the "smallestDegree" term, so it will be cut off at q^{-smallestDegree}.
+with sum n) returns an infinite power series in $q^{-1}$ representing the stable multiplicity of the family of irreducible partitions given by "part" in the
+cohomology of complex configuration space. The infinite power series is expanded out to the "smallestDegree" term, so it will be cut off at $q^\text{-smallestDegree}$.
 
 Abstract:
+\newcommand{\pconf}{\text{PConf}}
+\newcommand{\conf}{\text{Conf}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Q}{\mathbb{Q}}
 Representation stability was introduced to study mathematical structures which stabilize when viewed from a representation theoretic framework. 
-The instance of representation stability studied in this project is that of ordered complex configuration space, denoted $\pconf_n(\C)$:
+The instance of representation stability studied in this project is that of ordered complex configuration space, denoted $PConf_n(\C)$:
 
 $$\pconf_n(\C) := \{ (x_1, x_2, \dots, x_n) \in \C^n \ | \ x_i \neq x_j \}$$
 
