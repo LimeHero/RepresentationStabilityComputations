@@ -9,10 +9,10 @@ with sum n) returns an infinite power series in $q^{-1}$ representing the stable
 cohomology of complex configuration space. The infinite power series is expanded out to the "smallestDegree" term, so it will be cut off at $q^\text{-smallestDegree}$.
 
 Abstract:
-\newcommand{\pconf}{\text{PConf}}
+$\newcommand{\pconf}{\text{PConf}}
 \newcommand{\conf}{\text{Conf}}
 \newcommand{\C}{\mathbb{C}}
-\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\Q}{\mathbb{Q}}$
 Representation stability was introduced to study mathematical structures which stabilize when viewed from a representation theoretic framework. 
 The instance of representation stability studied in this project is that of ordered complex configuration space, denoted $PConf_n(\C)$:
 
