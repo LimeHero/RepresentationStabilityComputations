@@ -14,7 +14,7 @@ public class MainMethod
     static void Main(string[] args)
     {
         // Returns CTP((p'_k j)) for various j + k = i
-        for (int i = 1; i < 5; i++)
+        for (int i = 1; i < 0; i++)
         {
             for (int j = 1; j < 6; j++)
             {
@@ -97,7 +97,7 @@ public class MainMethod
         // Characters of young tableaus with k boxes (top row tending toward infinity)
         // in cycle choose notation
         {
-            int k = 5;
+            int k = -1;
 
             if (k > 0)
             {
@@ -126,6 +126,7 @@ public class MainMethod
                         }
                         Console.WriteLine(SymmPolyToValues.LinComboToString(flip_order));
                         Console.WriteLine();
+                        continue;
                     }
 
                     // reduce:
@@ -224,22 +225,33 @@ public class MainMethod
                     perPageCount++;
                 }
             }
-            Console.WriteLine("\\end{tabular}");
-            Console.WriteLine("\\end{center}");
+            if (a < b)
+            {
+                Console.WriteLine("\\end{tabular}");
+                Console.WriteLine("\\end{center}");
+            }
         }
 
         // All young tableaus with i boxes
-        for (int i = 1; i < 0; i++)
+        for (int i = 8; i < 9; i++)
         {
             foreach (List<int> part in IntegerFunctions.AllPartitions(i))
             {
+                bool theone = part[0] == 2;
+                for (int j = 1; j < part.Count; j ++) { 
+                    if (part[j] != 1)
+                        theone = false;
+                }
+                if (!theone)
+                    continue;
+
                 PrintList(part);
-                Console.WriteLine(YoungToPoly(part).ToRevString());
+                Console.WriteLine(YoungToPoly(part, -30).ToRevString());
             }
         }
 
         // wedge powers
-        for (int i = 1; i < 0; i++)
+        for (int i = 1; i < 6; i++)
         {
             Console.WriteLine(WedgePowers(i, -20).ToRevString());
             Console.WriteLine("");
@@ -315,7 +327,7 @@ public class MainMethod
     /// <summary>
     /// Prints the coefficients for the young diagram corresponding to (n, k[0], k[1], ...).
     /// 
-    /// k should thus be a decreasing list of positive integers.
+    /// k should thus be a nonincreasing list of positive integers.
     /// 
     /// Calls the wedge powers separately for performance.
     /// </summary>

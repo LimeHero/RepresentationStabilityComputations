@@ -302,6 +302,8 @@ namespace Polynomials
                 if (firstTerm)
                 {
                     firstTerm = false;
+                    if ((lead + i) % 2 != 0)
+                        output += "-";
                     output += TermToString(i, coefs[i], LaTeX);
                     continue;
                 }

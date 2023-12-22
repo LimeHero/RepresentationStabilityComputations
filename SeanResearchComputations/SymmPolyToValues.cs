@@ -125,7 +125,7 @@ namespace SeanResearchComputations
         }
 
         /// <summary>
-        /// Returns a string that represents the representation of a symmetric polynomial
+        /// Returns a string of a symmetric polynomial
         /// in the basis of the product of choose polynomials.
         /// </summary>
         /// <param name="allTerms"></param>

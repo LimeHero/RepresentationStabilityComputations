@@ -161,7 +161,7 @@ namespace SeanResearchComputations
                         throw new Exception("(YoungToPoly) No negative numbers!");
 
                     if (i > 0 && k[i] > k[i - 1])
-                        throw new Exception("(YoungToPoly) Must be decreasing sequence!");
+                        throw new Exception("(YoungToPoly) Must be nonincreasing sequence!");
 
                     if (k[i] != 1)
                         allones = false;
@@ -213,7 +213,6 @@ namespace SeanResearchComputations
             // all terms of the discriminant
             foreach (Tuple<int, List<int>> term in discriminant)
             {
-                // [l_2 - discriminant_{x_2}, l_3 - discriminant_{x_3}]
                 List<int> l = new(k);
                 for (int i = 0; i < l.Count; i++)
                 {
