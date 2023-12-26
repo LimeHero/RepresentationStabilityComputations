@@ -41,7 +41,20 @@ namespace PolynomialTests
             LaurentPolynomial poly2 = new LaurentPolynomial(-1, new List<BigRational> { 1, -2, 4 });
 
             LaurentPolynomial prod = poly1 * poly2;
-            Assert.IsTrue(prod == new LaurentPolynomial(-3, new List<BigRational> { -4, 9, -18, -3, 14, -28}));
+            Assert.IsTrue(prod == new LaurentPolynomial(-3, new List<BigRational> { -4, 9, -18, -3, 14, -28 }));
+        }
+
+        [TestMethod]
+        public void LaurentPolynomialIndexTest()
+        {
+            LaurentPolynomial poly1 = new LaurentPolynomial(-2, new List<BigRational> { -4, 1, 0, -7 });
+            LaurentPolynomial poly2 = new LaurentPolynomial(-1, new List<BigRational> { 1, -2, 4 });
+
+            Assert.IsTrue(poly1[-2] == -4);
+            Assert.IsTrue(poly1[-3] == 0);
+            Assert.IsTrue(poly1[1] == -7);
+            Assert.IsTrue(poly1[4] == 0);
+            Assert.IsTrue((poly1 + poly2)[-1] == 2);
         }
 
         [TestMethod]

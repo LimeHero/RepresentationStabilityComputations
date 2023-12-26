@@ -13,11 +13,11 @@ public class MainMethod
     /// <param name="args"></param>
     static void Main(string[] args)
     {
-        // Prints out to the "results.csv" file
+        // Prints out to the "results.txt" file on desktop
         // All young tableaus with i boxes
         {
             List<string> lines = new();
-            for (int i = 1; i < 10; i++)
+            for (int i = 1; i < 0; i++)
             {
                 foreach (List<int> part in IntegerFunctions.AllPartitions(i))
                 {
@@ -26,13 +26,10 @@ public class MainMethod
                     string line = "\"["; for (int j = 0; j < part.Count - 1; j++) line += part[j] + ", ";
                     line += part[^1] + "]\",";
 
-                    for (int j = 0; j > Math.Max(term.Degree(), -30); j--)
-                        line += "0,";
+                    for (int j = 0; j > -30; j--)
+                        line += term[j] + ",";
 
-                    for (int j = term.Degree(); j > -30; j--)
-                        line += term.coefs[j - term.lead] + ",";
-
-                    line += term.coefs[0];
+                    line += term[-30];
 
                     lines.Add(line);
                 }
@@ -277,12 +274,12 @@ public class MainMethod
         }
 
         // All young tableaus with i boxes
-        for (int i = 11; i < 0; i++)
+        for (int i = 1; i < 6; i++)
         {
             foreach (List<int> part in IntegerFunctions.AllPartitions(i))
             {
                 PrintList(part);
-                Console.WriteLine(YoungToPoly(part, -6).ToRevString());
+                Console.WriteLine(YoungToPoly(part, -15).ToRevString());
             }
         }
 

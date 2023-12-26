@@ -86,6 +86,32 @@ namespace Polynomials
         }
 
         /// <summary>
+        /// Returns the coefficient at the given index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public BigRational this[int index]
+        {
+            get => getCoefAt(index);
+        }
+
+        /// <summary>
+        /// Helper for indexing
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        private BigRational getCoefAt(int index)
+        {
+            if (index > Degree())
+                return 0;
+
+            if (index < lead)
+                return 0;
+
+            return coefs[index - lead];
+        }
+
+        /// <summary>
         /// Adds together two laurent polynomials
         /// </summary>
         /// <param name="f"></param>
@@ -302,17 +328,15 @@ namespace Polynomials
                 if (firstTerm)
                 {
                     firstTerm = false;
-                    if ((lead + i) % 2 != 0)
-                        output += "-";
                     output += TermToString(i, coefs[i], LaTeX);
                     continue;
                 }
 
-                if ((lead + i) % 2 == 0)
+                if (coefs[i] > 0)
                     output += " + ";
                 else
                     output += " - ";
-                output += TermToString(i, coefs[i], LaTeX);
+                output += TermToString(i, coefs[i] < 0 ? -1*coefs[i]: coefs[i], LaTeX);
             }
 
             if (output.Equals(""))
@@ -328,7 +352,6 @@ namespace Polynomials
         /// <returns></returns>
         private string TermToString(int i, BigRational c, bool LaTeX)
         {
-            c = BigRational.Abs(c); // since it always alternates predictably
             if (c == new BigRational())
                 return "";
 
