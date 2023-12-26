@@ -110,7 +110,7 @@ namespace SeanResearchComputations
 
             for (int i = 0; i < expression.Item1.Count; i++)
             {
-                List< Tuple<int, int> > nextTerm = expression.Item1[i];
+                List<Tuple<int, int>> nextTerm = expression.Item1[i];
                 SymmetricPolynomial prod = new(expression.Item2[i]);
                 foreach (Tuple<int, int> t in nextTerm)
                 {
@@ -178,12 +178,12 @@ namespace SeanResearchComputations
         /// </summary>
         /// <param name="allTerms"></param>
         /// <returns></returns>
-        public static LaurentPolynomial CyclicPolynomialBasisToPolynomial(Tuple<List<List<Tuple<int, int>>>, List<BigRational>> allTerms, int lowestDegree)
+        public static LaurentPolynomial CyclicPolynomialBasisToPolynomialOriginal(Tuple<List<List<Tuple<int, int>>>, List<BigRational>> allTerms, int lowestDegree)
         {
             List<List<Tuple<int, int>>> symPolys = allTerms.Item1;
             List<BigRational> coefficients = allTerms.Item2;
 
-            LaurentPolynomial output = new(); 
+            LaurentPolynomial output = new();
 
             for (int i = 0; i < symPolys.Count; i++)
             {
@@ -214,46 +214,89 @@ namespace SeanResearchComputations
         }
 
         /// <summary>
-        /// Multiplies poly by the power series where k = powerSeries.Item1, j = powerSeries.Item2 -> (q^{-k} / (1 + q^{-k}))^j
-        /// This is equivalent to multiplying by the power series (q^{-k} - q^{-2k} + q^{-3k} - ...) j times.
+        /// Given a list of choose basis polynomials of the form (i_1 C j_1)(i_2 C j_2)...(i_n C j_n), sends each term P
+        /// to the polynomial statistic \lim_{n\to\infty} q^{-n} \sum_{f \in Conf_n(\F_q)} P(f)
+        /// 
+        /// This is given by the following formula:
+        /// (x_1 C j_1)(x_2 C j_2)...(x_n C j_n) -> (1 - q^{-1})\prod_{k = 1}^n ((Polynomial.MoebiusSum(i_k, j_k) C j_k) (q^{-i_k} - q^{-2i_k} + ...)^{j_k}
         /// </summary>
-        /// <param name="nextTerm"></param>
-        /// <param name="numTerms"></param>
-        /// <param name="tuple"></param>
+        /// <param name="allTerms"></param>
+        /// <param name="lowestDegree"></param>
+        /// <returns></returns>
+        public static LaurentPolynomial CyclicPolynomialBasisToPolynomial(Tuple<List<List<Tuple<int, int>>>, List<BigRational>> allTerms, int lowestDegree)
+        {
+
+            List<List<Tuple<int, int>>> symPolys = allTerms.Item1;
+            List<BigRational> coefficients = allTerms.Item2;
+
+            LaurentPolynomial output = new();
+
+            for (int i = 0; i < symPolys.Count; i++)
+            {
+                LaurentPolynomial nextTerm = new(coefficients[i]);
+                for (int j = 0; j < symPolys[i].Count; j++)
+                {
+                    //the choose portion of the expression
+                    LaurentPolynomial nextProd = (LaurentPolynomial)Polynomial.Choose(Polynomial.MoebiusSum(symPolys[i][j].Item1), symPolys[i][j].Item2);
+
+                    if (symPolys[i][j].Item1 != 0)
+                        nextProd = MultByPowerSeries(nextProd, lowestDegree, symPolys[i][j]);
+
+                    nextTerm *= nextProd;
+                }
+
+                output += nextTerm;
+            }
+
+            // multiply by 1 - q^{-1}
+            output *= new LaurentPolynomial(-1, new() { -1, 1 });
+            output.RoundToNthDegree(lowestDegree);
+
+            return output;
+        }
+
+        /// <summary>
+        /// Multiplies poly by the power series (q^{-k} - q^{-2k} + q^{-3k} - ...)^j times.
+        /// Computes the coefficients of the resulting power series accurately to degree `lowestDegree'.
+        /// </summary>
+        /// <param name="poly"></param>
+        /// <param name="lowestDegree"></param>
+        /// <param name="powerSeries"></param>
         /// <returns></returns>
         private static LaurentPolynomial MultByPowerSeries(LaurentPolynomial poly, int lowestDegree, Tuple<int, int> powerSeries)
         {
-            int k = powerSeries.Item1;
-            int j = powerSeries.Item2;
+            int i = powerSeries.Item1;
+            int j = powerSeries.Item2; 
 
-            // suppose f = poly
-            LaurentPolynomial result = new(poly);
-            // safe to round here, since we are not multiplying by any q with positive degree
-            result.RoundToNthDegree(lowestDegree);
-
-            for (int a = 0; a < j; a++)
+            // compute coefficients of (q^{-i} - q^{-2i} + ... )^j down to lowestDegree - deg(poly) 
+            LaurentPolynomial powSeries = new();
+            for (int l = j; -l*i >= lowestDegree - poly.Degree(); l++)
             {
-                //product is the polynomial -q^{-k}
-                LaurentPolynomial product = new(-k, new List<BigRational> { -1 });
-                result *= -1 * product;
-                result.RoundToNthDegree(lowestDegree);
+                // coefficient of q^{-i*l} in (q^{-i} - q^{-2i} + ... )^j
+                BigRational coef = 0;
 
-                //we save computation by multiplying and adding terms piece by piece
-                LaurentPolynomial nextTerm = new(result);
-                while (!nextTerm.IsZero())
+                foreach (List<int> kpart in IntegerFunctions.KPartitions(l, j))
                 {
-                    // next term = f*(-q)^{-lk}
-                    nextTerm *= product;
+                    List<int> cycles = IntegerFunctions.PartitionToNumCycles(kpart);
 
-                    //we only need to keep track of the terms that have terms with degree bigger than the lowest degree
-                    nextTerm.RoundToNthDegree(lowestDegree);
+                    BigRational term = IntegerFunctions.MultinomialCoef(j, cycles);
 
-                    // result = f*(q^{-k} - q^{-2k} + ... - (-q)^{-lk})
-                    result += nextTerm;
+                    int sign = 1;
+                    foreach (int n in kpart)
+                        if (n % 2 == 0)
+                            sign *= -1;
+                    term *= sign;
+
+                    coef += term;
                 }
+
+                powSeries += new LaurentPolynomial(-l * i, new() { coef });
             }
 
-            return result;
+            // multiply
+            LaurentPolynomial output = powSeries * poly;
+            output.RoundToNthDegree(lowestDegree);
+            return output;
         }
     }
 }

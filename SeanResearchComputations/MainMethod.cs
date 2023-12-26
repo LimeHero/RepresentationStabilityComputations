@@ -13,6 +13,7 @@ public class MainMethod
     /// <param name="args"></param>
     static void Main(string[] args)
     {
+
         // Returns CTP((p'_k j)) for various j + k = i
         for (int i = 1; i < 0; i++)
         {
@@ -198,8 +199,10 @@ public class MainMethod
             {
                 foreach (List<int> part in IntegerFunctions.AllPartitions(i))
                 {
-                    if (part.Count < 7)
+                    // DELTE LATER
+                    if (part[0] != 1)
                         continue;
+
                     if (perPageCount >= perPage)
                     {
                         perPageCount = 0;
@@ -233,26 +236,19 @@ public class MainMethod
         }
 
         // All young tableaus with i boxes
-        for (int i = 8; i < 9; i++)
+        for (int i = 1; i < 9; i++)
         {
             foreach (List<int> part in IntegerFunctions.AllPartitions(i))
             {
-                bool theone = part[0] == 2;
-                for (int j = 1; j < part.Count; j ++) { 
-                    if (part[j] != 1)
-                        theone = false;
-                }
-                if (!theone)
-                    continue;
-
                 PrintList(part);
                 Console.WriteLine(YoungToPoly(part, -30).ToRevString());
             }
         }
 
         // wedge powers
-        for (int i = 1; i < 6; i++)
+        for (int i = 1; i < 0; i++)
         {
+            Console.WriteLine(i + "th wedge power");
             Console.WriteLine(WedgePowers(i, -20).ToRevString());
             Console.WriteLine("");
         }

@@ -598,6 +598,76 @@ namespace IntegerMethods
         }
 
         /// <summary>
+        /// Iterates through all partitions of l[0], l[1], ... l[-1], where l is a list of integers.
+        /// </summary>
+        /// <param name="l"></param>
+        /// <returns></returns>
+        public static IEnumerable<List<List<int>>> AllPartitionLists(List<int> l)
+        {
+            if (l.Count <= 0)
+                yield break;
+
+            if (l.Count == 1)
+            {
+                foreach (List<int> part in IntegerFunctions.AllPartitions(l[0]))
+                    yield return new() { new(part) };
+
+                yield break;
+            }
+
+            foreach (List<int> part in IntegerFunctions.AllPartitions(l[^1]))
+            {
+                List<int> nextl = new(); // remaining terms
+                for (int i = 0; i < l.Count - 1; i++)
+                    nextl.Add(l[i]);
+
+                foreach (List<List<int>> nextlparts in AllPartitionLists(nextl))
+                {
+                    List<List<int>> parts = new(); // copy nextlparts
+                    foreach (List<int> term in nextlparts)
+                        parts.Add(new(term));
+
+                    parts.Add(part);
+
+                    yield return parts;
+                }
+            }
+
+            yield break;
+        }
+
+        /// <summary>
+        /// Returns all partitions of n into k positive integers. l is the least integer in the 
+        /// partition, and is used for recursion.
+        /// 
+        /// Code adapted from https://stackoverflow.com/questions/18503096/python-integer-partitioning-with-given-k-partitions
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="k"></param>
+        /// <param name="l"></param>
+        /// <returns></returns>
+        public static IEnumerable<List<int>> KPartitions(int n, int k, int l = 1)
+        {
+            if (k < 1)
+                yield break;
+            if (k == 1)
+            {
+                if (n >= l)
+                    yield return new List<int> { n };
+                yield break;
+            }
+
+            for (int i = l; i <= n; i++)
+            {
+                foreach (List<int> result in KPartitions(n - i, k - 1, i))
+                {
+                    result.Add(i);
+                    yield return result;
+                }
+            }
+        }
+
+        /// <summary>
         /// Converts a partition of n (a sorted list of integers) to a list with the number of 
         /// each value in the partition.
         /// For instance,

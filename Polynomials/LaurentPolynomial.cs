@@ -11,7 +11,7 @@ namespace Polynomials
     /// that represents the least degree of terms of the polynomial (lead). For instance,
     /// x^{-3} + x^{-1} - 2 - 2x is represented as:
     /// 
-    /// coefs = {1, 0, 1, -2, -2}
+    /// coefs = [1, 0, 1, -2, -2]
     /// lead = -3
     /// </summary>
     public class LaurentPolynomial

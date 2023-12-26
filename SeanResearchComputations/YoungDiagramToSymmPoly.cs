@@ -76,7 +76,7 @@ namespace SeanResearchComputations
                         j++;
                     }
                     i--; // so we dont skip over next m
-                    
+
                     result.Item1[result.Item1.Count - 1].Add(new(m, j));
                 }
             }
@@ -153,6 +153,7 @@ namespace SeanResearchComputations
         /// <returns></returns>
         public static Tuple<List<List<Tuple<int, int>>>, List<BigRational>> YoungDiagramToChoose(List<int> k)
         {
+            // special cases
             {
                 bool allones = true;
                 for (int i = 0; i < k.Count(); i++)
@@ -174,12 +175,13 @@ namespace SeanResearchComputations
             Tuple<List<List<Tuple<int, int>>>, List<BigRational>> result = new(new(), new());
 
             List<Tuple<int, List<int>>> discriminant = new();
-            // we need not add the x_1 coefficient, since tending toward infinity
-            // we add each term of the discriminant bit by bit - start with (-x_2)*(-x_3)*...
+            // we need not add the x_0 coefficient, since tending toward infinity
+            // we add each term of the discriminant bit by bit - start with (-x_1)*(-x_2)*...
             // and each binary digit corresponds to a choice of a term in the discriminant
-            int numterms = (k.Count * (k.Count + 1)) / 2;
+            int numterms = k.Count * (k.Count + 1) / 2;
             int power2 = (int)IntegerFunctions.Pow(2, numterms);
-
+            // compute determinant
+            // TODO: make wayyy more efficient, combine terms, and remove 0 terms
             for (int i = 0; i < power2; i++)
             {
                 List<int> currentterm = new() { 0 }; for (int j = 0; j <= k.Count; j++) currentterm.Add(0);
@@ -210,9 +212,10 @@ namespace SeanResearchComputations
                 discriminant.Add(new(pm1, currentterm));
             }
 
-            // all terms of the discriminant
+            // iterate through all terms of the discriminant
             foreach (Tuple<int, List<int>> term in discriminant)
             {
+                // the integers l in Frobenius formula
                 List<int> l = new(k);
                 for (int i = 0; i < l.Count; i++)
                 {
@@ -220,16 +223,20 @@ namespace SeanResearchComputations
                     l[i] += l.Count - 1 - i;
                 }
 
+                // if any l[i] is negative, the coefficient is zero.
                 foreach (int b in l) if (b < 0) continue;
 
-                foreach (List<List<int>> parts in AllPartitionLists(l))
+                // All partitions of l[0], l[1], ... l[^1]
+                foreach (List<List<int>> parts in IntegerFunctions.AllPartitionLists(l))
                 {
+                    // Change to cycle format of partitions
                     List<List<int>> cycles = new();
                     foreach (List<int> part in parts) cycles.Add(IntegerFunctions.PartitionToNumCycles(part));
 
                     result.Item1.Add(new()); // next term added
-                    result.Item2.Add(term.Item1); // coefficient of determinant term
+                    result.Item2.Add(term.Item1); // coefficient of determinant term (non-zero)
 
+                    // make all partitions the same size
                     int maxterm = parts[0][0];
                     for (int i = 1; i < parts.Count; i++)
                         if (parts[i][0] > maxterm)
@@ -241,17 +248,16 @@ namespace SeanResearchComputations
 
                     for (int i = 0; i < maxterm; i++)
                     {
-                        bool allzero = true;
-                        foreach (List<int> cycle in cycles)
-                            if (cycle[i] != 0)
-                                allzero = false;
-
-                        if (allzero)
-                            continue;
-
+                        // Finding the (x_i C j_i) term
                         int totalsum = 0;
                         foreach (List<int> cycle in cycles)
                             totalsum += cycle[i];
+
+                        // j_i = 1, so skip
+                        if (totalsum == 0)
+                            continue;
+
+                        // i + 1, since we index from 1 in the variables x_1, ... x_n for character polynomial
                         result.Item1[^1].Add(new(i + 1, totalsum)); // [^1] means 1 from the end of list (last elmnt)
 
                         List<int> ithterms = new();
@@ -263,46 +269,6 @@ namespace SeanResearchComputations
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Iterates through all partitions of l[0], l[1], and so on.
-        /// Basically a way of doing an arbitrary number of foreach loops.
-        /// </summary>
-        /// <param name="l"></param>
-        /// <returns></returns>
-        public static IEnumerable<List<List<int>>> AllPartitionLists(List<int> l)
-        {
-            if (l.Count <= 0)
-                yield break;
-
-            if (l.Count == 1)
-            {
-                foreach (List<int> part in IntegerFunctions.AllPartitions(l[0]))
-                    yield return new() { new(part) };
-
-                yield break;
-            }
-
-            foreach (List<int> part in IntegerFunctions.AllPartitions(l[^1]))
-            {
-                List<int> nextl = new(); // remaining terms
-                for (int i = 0; i < l.Count - 1; i++)
-                    nextl.Add(l[i]);
-
-                foreach (List<List<int>> nextlparts in AllPartitionLists(nextl))
-                {
-                    List<List<int>> parts = new(); // copy nextlparts
-                    foreach (List<int> term in nextlparts)
-                        parts.Add(new(term));
-
-                    parts.Add(part);
-
-                    yield return parts;
-                }
-            }
-
-            yield break;
         }
     }
 }
