@@ -176,40 +176,11 @@ namespace SeanResearchComputations
 
             List<Tuple<int, List<int>>> discriminant = new();
             // we need not add the x_0 coefficient, since tending toward infinity
-            // we add each term of the discriminant bit by bit - start with (-x_1)*(-x_2)*...
-            // and each binary digit corresponds to a choice of a term in the discriminant
-            int numterms = k.Count * (k.Count + 1) / 2;
-            int power2 = (int)IntegerFunctions.Pow(2, numterms);
-            // compute determinant
-            // TODO: make wayyy more efficient, combine terms, and remove 0 terms
-            for (int i = 0; i < power2; i++)
+            // we compute the discriminant binomials by taking determinant of vandermont matrix
+            foreach (List<int> L in IntegerFunctions.Permutations(k.Count + 1))
             {
-                List<int> currentterm = new() { 0 }; for (int j = 0; j <= k.Count; j++) currentterm.Add(0);
-                List<int> bindig = IntegerFunctions.binaryDigits(i);
-
-                while (bindig.Count < numterms)
-                    bindig.Add(0);
-
-                int r = 0;
-                int pm1 = 1;
-                for (int n = 1; n < k.Count + 1; n++)
-                {
-                    for (int m = 0; m < n; m++)
-                    {
-                        if (bindig[r] == 0)
-                        {
-                            pm1 *= -1;
-                            currentterm[n - 1] += 1;
-                        }
-                        else
-                            if (m > 0)
-                            currentterm[m - 1] += 1;
-
-                        r++;
-                    }
-                }
-
-                discriminant.Add(new(pm1, currentterm));
+                List<int> currentterm = new() { }; for (int j = 0; j <= k.Count; j++) currentterm.Add(L[j]);
+                discriminant.Add(new(IntegerFunctions.Sgn(L), currentterm));
             }
 
             // iterate through all terms of the discriminant
@@ -233,18 +204,17 @@ namespace SeanResearchComputations
                     List<List<int>> cycles = new();
                     foreach (List<int> part in parts) cycles.Add(IntegerFunctions.PartitionToNumCycles(part));
 
-                    result.Item1.Add(new()); // next term added
-                    result.Item2.Add(term.Item1); // coefficient of determinant term (non-zero)
-
-                    // make all partitions the same size
+                    // make all partitions the same size for ease of implementation
                     int maxterm = parts[0][0];
                     for (int i = 1; i < parts.Count; i++)
                         if (parts[i][0] > maxterm)
                             maxterm = parts[i][0];
-
                     foreach (List<int> cycle in cycles)
                         while (cycle.Count < maxterm)
                             cycle.Add(0);
+
+                    List<Tuple<int, int>> choosePoly = new(); // next term added
+                    BigRational coef = term.Item1; // coefficient of determinant term (\pm 1)
 
                     for (int i = 0; i < maxterm; i++)
                     {
@@ -253,18 +223,22 @@ namespace SeanResearchComputations
                         foreach (List<int> cycle in cycles)
                             totalsum += cycle[i];
 
-                        // j_i = 1, so skip
+                        // j_i = 0, so skip
                         if (totalsum == 0)
                             continue;
 
                         // i + 1, since we index from 1 in the variables x_1, ... x_n for character polynomial
-                        result.Item1[^1].Add(new(i + 1, totalsum)); // [^1] means 1 from the end of list (last elmnt)
+                        choosePoly.Add(new(i + 1, totalsum)); // [^1] means 1 from the end of list (last elmnt)
 
+                        // (multinomial) coefficient
                         List<int> ithterms = new();
                         foreach (List<int> cycle in cycles)
                             ithterms.Add(cycle[i]);
-                        result.Item2[^1] *= IntegerFunctions.MultinomialCoef(totalsum, ithterms);
+                        coef *= IntegerFunctions.MultinomialCoef(totalsum, ithterms);
                     }
+
+                    result.Item1.Add(choosePoly);
+                    result.Item2.Add(coef);
                 }
             }
 

@@ -415,7 +415,7 @@ namespace IntegerMethods
         /// </summary>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static List<int> binaryDigits(long n)
+        public static List<int> BinaryDigits(long n)
         {
             int size = 1;
             long k = 2;
@@ -466,6 +466,63 @@ namespace IntegerMethods
         }
 
         /// <summary>
+        /// Given a permutation L of [1,2,...,n]
+        /// </summary>
+        /// <param name="L"></param>
+        /// <returns></returns>
+        public static int Sgn(List<int> L)
+        {
+            int count = 0;
+            for (int i = 0; i < L.Count; i++)
+                for (int j = i + 1; j < L.Count; j++)
+                    if (L[i] > L[j]) count++;
+            return 1 - 2*(count % 2);
+        }
+
+        /// <summary>
+        /// Returns all permutations of n elements, as permutations of the list [0, 1, ..., n-1]
+        /// </summary>
+        /// <param name="n"></param>
+        /// <returns></returns>
+        public static IEnumerable<List<int>> Permutations(int n)
+        {
+            List<int> L = new();
+            for (int i = 0; i < n; i++)
+                L.Add(i);
+
+            foreach (List<int> l in PermutationsOfList(L))
+                yield return l;
+
+            yield break;
+        }
+
+        /// <summary>
+        /// Returns all permutations of the list L
+        /// </summary>
+        /// <param name="L"></param>
+        /// <returns></returns>
+        public static IEnumerable<List<T>> PermutationsOfList<T>(List<T> L)
+        {
+            if (L.Count <= 1)
+            {
+                yield return new List<T>(L);
+                yield break;
+            }
+
+            for (int i = 0; i < L.Count; i++)
+            {
+                List<T> A = new(L);
+                A.RemoveAt(i);
+                foreach (List<T> k in PermutationsOfList(A))
+                {
+                    k.Insert(0, L[i]);
+                    yield return k;
+                }
+            }
+            yield break;
+        }
+
+        /// <summary>
         /// Returns the number of partitions of n
         /// </summary>
         /// <param name="k"></param>
@@ -476,9 +533,9 @@ namespace IntegerMethods
                 return 0;
 
             //using the recurrence relation, we must solve for partitions(n-1), ... partitions(0),
-            //so it is just as fast to call the iterator of permutations.
+            //so it is just as fast to call the iterator of partitions.
             BigInteger i = 0;
-            foreach (BigInteger part in iterPartitions())
+            foreach (BigInteger part in IterPartitions())
             {
                 if (i == n)
                     return part;
@@ -495,7 +552,7 @@ namespace IntegerMethods
         /// </summary>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static IEnumerable<BigInteger> iterPartitions()
+        public static IEnumerable<BigInteger> IterPartitions()
         {
             List<BigInteger> partitionValues = new() { 1 };
             yield return 1;

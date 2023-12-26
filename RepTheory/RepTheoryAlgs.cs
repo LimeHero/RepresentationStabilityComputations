@@ -38,7 +38,7 @@ namespace RepTheory
             for (int i = 0; i < power2; i++)
             {
                 List<int> currentterm = new(l);
-                List<int> bindig = IntegerFunctions.binaryDigits(i);
+                List<int> bindig = IntegerFunctions.BinaryDigits(i);
 
 
                 while (bindig.Count < numterms)

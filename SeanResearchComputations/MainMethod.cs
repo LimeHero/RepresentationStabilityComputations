@@ -13,6 +13,47 @@ public class MainMethod
     /// <param name="args"></param>
     static void Main(string[] args)
     {
+        // Prints out to the "results.csv" file
+        // All young tableaus with i boxes
+        {
+            List<string> lines = new();
+            for (int i = 1; i < 10; i++)
+            {
+                foreach (List<int> part in IntegerFunctions.AllPartitions(i))
+                {
+                    LaurentPolynomial term = YoungToPoly(part, -30);
+
+                    string line = "\"["; for (int j = 0; j < part.Count - 1; j++) line += part[j] + ", ";
+                    line += part[^1] + "]\",";
+
+                    for (int j = 0; j > Math.Max(term.Degree(), -30); j--)
+                        line += "0,";
+
+                    for (int j = term.Degree(); j > -30; j--)
+                        line += term.coefs[j - term.lead] + ",";
+
+                    line += term.coefs[0];
+
+                    lines.Add(line);
+                }
+            }
+
+            Console.WriteLine("Lines:");
+            PrintList(lines);
+            Console.WriteLine("");
+            Console.WriteLine("");
+
+            // Set a variable to the Documents path.
+            string docPath =
+              Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+            // Write the string array to a new file named "WriteLines.txt".
+            using (StreamWriter outputFile = new StreamWriter(Path.Combine(docPath, "results.txt")))
+            {
+                foreach (string line in lines)
+                    outputFile.WriteLine(line);
+            }
+        }
 
         // Returns CTP((p'_k j)) for various j + k = i
         for (int i = 1; i < 0; i++)
@@ -236,12 +277,12 @@ public class MainMethod
         }
 
         // All young tableaus with i boxes
-        for (int i = 1; i < 9; i++)
+        for (int i = 11; i < 0; i++)
         {
             foreach (List<int> part in IntegerFunctions.AllPartitions(i))
             {
                 PrintList(part);
-                Console.WriteLine(YoungToPoly(part, -30).ToRevString());
+                Console.WriteLine(YoungToPoly(part, -6).ToRevString());
             }
         }
 

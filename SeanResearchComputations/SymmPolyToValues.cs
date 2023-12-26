@@ -168,54 +168,10 @@ namespace SeanResearchComputations
             return s;
         }
 
-
-        /// <summary>
-        /// Expresses a symmetric polynomial in the basis (p'_k C j)*...*(p'_k C j) as a polynomial with the first numTerms terms
-        /// by the following conversion:
-        /// (p'_k C j) -> (moebiussum(k) C j) * (1 / (1 + q^k))^j = (moebiussum(k) C j) * (q^(-k) - q^(-2k) + q^(3k) - ...)^j
-        /// The actual polynomial is a power series, but we are concerned with
-        /// a finite number of the terms. 
-        /// </summary>
-        /// <param name="allTerms"></param>
-        /// <returns></returns>
-        public static LaurentPolynomial CyclicPolynomialBasisToPolynomialOriginal(Tuple<List<List<Tuple<int, int>>>, List<BigRational>> allTerms, int lowestDegree)
-        {
-            List<List<Tuple<int, int>>> symPolys = allTerms.Item1;
-            List<BigRational> coefficients = allTerms.Item2;
-
-            LaurentPolynomial output = new();
-
-            for (int i = 0; i < symPolys.Count; i++)
-            {
-                LaurentPolynomial nextTerm = new(coefficients[i]);
-                for (int j = 0; j < symPolys[i].Count; j++)
-                {
-                    //the choose portion of the expression
-                    nextTerm *= (LaurentPolynomial)Polynomial.Choose(Polynomial.MoebiusSum(symPolys[i][j].Item1), symPolys[i][j].Item2);
-                }
-
-                // multiply by 1 - q^{-1}
-                nextTerm *= new LaurentPolynomial(-1, new() { -1, 1 });
-
-                //we now multiply by the desired power series, which we do at the end to avoid
-                //saving more terms of the series than necessary
-                for (int j = 0; j < symPolys[i].Count; j++)
-                {
-                    if (symPolys[i][j].Item1 == 0)
-                        continue;
-                    //now we multiply by the powerseries (out to n terms)
-                    nextTerm = MultByPowerSeries(nextTerm, lowestDegree, symPolys[i][j]);
-                }
-
-                output += nextTerm;
-            }
-
-            return output;
-        }
-
         /// <summary>
         /// Given a list of choose basis polynomials of the form (i_1 C j_1)(i_2 C j_2)...(i_n C j_n), sends each term P
         /// to the polynomial statistic \lim_{n\to\infty} q^{-n} \sum_{f \in Conf_n(\F_q)} P(f)
+        /// expressed a power series in q^{-1} with coefficients computed accurately out to q^{-lowestDegree}
         /// 
         /// This is given by the following formula:
         /// (x_1 C j_1)(x_2 C j_2)...(x_n C j_n) -> (1 - q^{-1})\prod_{k = 1}^n ((Polynomial.MoebiusSum(i_k, j_k) C j_k) (q^{-i_k} - q^{-2i_k} + ...)^{j_k}
@@ -266,11 +222,11 @@ namespace SeanResearchComputations
         private static LaurentPolynomial MultByPowerSeries(LaurentPolynomial poly, int lowestDegree, Tuple<int, int> powerSeries)
         {
             int i = powerSeries.Item1;
-            int j = powerSeries.Item2; 
+            int j = powerSeries.Item2;
 
             // compute coefficients of (q^{-i} - q^{-2i} + ... )^j down to lowestDegree - deg(poly) 
             LaurentPolynomial powSeries = new();
-            for (int l = j; -l*i >= lowestDegree - poly.Degree(); l++)
+            for (int l = j; -l * i >= lowestDegree - poly.Degree(); l++)
             {
                 // coefficient of q^{-i*l} in (q^{-i} - q^{-2i} + ... )^j
                 BigRational coef = 0;
