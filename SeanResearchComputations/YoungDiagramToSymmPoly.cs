@@ -177,10 +177,57 @@ namespace SeanResearchComputations
             List<Tuple<int, List<int>>> discriminant = new();
             // we need not add the x_0 coefficient, since tending toward infinity
             // we compute the discriminant binomials by taking determinant of vandermont matrix
+            // we have to compute this sgn_change to account for the fact that we have the determinant
+            // as \prod_{i<j} (x_i - x_j) in Frobenius formula, but as \prod_{i<j} (x_j - x_i) for det Vandermont matrix
+            int sgn_change = ((k.Count * (k.Count + 1) / 2) % 2) == 0 ? 1 : -1;
             foreach (List<int> L in IntegerFunctions.Permutations(k.Count + 1))
             {
                 List<int> currentterm = new() { }; for (int j = 0; j <= k.Count; j++) currentterm.Add(L[j]);
-                discriminant.Add(new(IntegerFunctions.Sgn(L), currentterm));
+                discriminant.Add(new(IntegerFunctions.Sgn(L) * sgn_change, currentterm));
+            }
+
+            //int numterms = k.Count * (k.Count + 1) / 2;
+            //int power2 = (int)IntegerFunctions.Pow(2, numterms);
+            //for (int i = 0; i < power2; i++)
+            //{
+            //    List<int> currentterm = new() { 0 }; for (int j = 0; j <= k.Count; j++) currentterm.Add(0);
+            //    List<int> bindig = IntegerFunctions.BinaryDigits(i);
+            //    while (bindig.Count < numterms)
+            //        bindig.Add(0);
+            //    int r = 0;
+            //    int pm1 = 1;
+            //    for (int n = 1; n < k.Count + 1; n++)
+            //    {
+            //        for (int m = 0; m < n; m++)
+            //        {
+            //            if (bindig[r] == 0)
+            //            {
+            //                pm1 *= -1;
+            //                currentterm[n - 1] += 1;
+            //            }
+            //            else
+            //                if (m > 0)
+            //                currentterm[m - 1] += 1;
+            //            r++;
+            //        }
+            //    }
+            //    discriminant.Add(new(pm1, currentterm));
+            //}
+
+            // Print discriminant
+            {
+                Console.WriteLine("DISCRIMINANT");
+                foreach (Tuple<int, List<int>> term in discriminant)
+                {
+                    Console.Write(term.Item1);
+                    for (int i = 0; i <= k.Count; i++)
+                    {
+                        Console.Write("x_" + i + "^" + term.Item2[i]);
+                    }
+                    Console.WriteLine();
+                }
+                Console.WriteLine("______");
+                Console.WriteLine("______");
             }
 
             // iterate through all terms of the discriminant
@@ -190,7 +237,7 @@ namespace SeanResearchComputations
                 List<int> l = new(k);
                 for (int i = 0; i < l.Count; i++)
                 {
-                    l[i] -= term.Item2[i];
+                    l[i] -= term.Item2[i + 1];
                     l[i] += l.Count - 1 - i;
                 }
 
