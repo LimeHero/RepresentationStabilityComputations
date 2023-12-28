@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using RepTheory;
 
-namespace SeanResearchComputations;
+namespace RepStabilityComputations;
 public class MainMethod
 {
     /// <summary>
@@ -13,311 +13,69 @@ public class MainMethod
     /// <param name="args"></param>
     static void Main(string[] args)
     {
-        // Prints out to the "results.txt" file on desktop
-        // All young tableaus with i boxes
-        {
-            List<string> lines = new();
-            for (int i = 1; i < 0; i++)
-            {
-                foreach (List<int> part in IntegerFunctions.AllPartitions(i))
-                {
-                    LaurentPolynomial term = YoungToPoly(part, -30);
+        int lowestDegree = -30;
 
-                    string line = "\"["; for (int j = 0; j < part.Count - 1; j++) line += part[j] + ", ";
-                    line += part[^1] + "]\",";
-
-                    for (int j = 0; j > -30; j--)
-                        line += term[j] + ",";
-
-                    line += term[-30];
-
-                    lines.Add(line);
-                }
-            }
-
-            Console.WriteLine("Lines:");
-            PrintList(lines);
-            Console.WriteLine("");
-            Console.WriteLine("");
-
-            // Set a variable to the Documents path.
-            string docPath =
-              Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-            // Write the string array to a new file named "WriteLines.txt".
-            using (StreamWriter outputFile = new StreamWriter(Path.Combine(docPath, "results.txt")))
-            {
-                foreach (string line in lines)
-                    outputFile.WriteLine(line);
-            }
-        }
-
-        // Returns CTP((p'_k j)) for various j + k = i
-        for (int i = 1; i < 0; i++)
-        {
-            for (int j = 1; j < 6; j++)
-            {
-                int k = i - j;
-                if (k <= 0)
-                    break;
-
-                Console.WriteLine("(p'_" + k + " " + j + ")");
-                Tuple<List<List<Tuple<int, int>>>, List<BigRational>> elt =
-                    new(new() { new() { new(k, j) } }, new() { 1 });
-                LaurentPolynomial series = SymmPolyToValues.CyclicPolynomialBasisToPolynomial(elt, -10);
-                Console.WriteLine(series.ToRevString());
-            }
-        }
-
-        // Frobenius formula for all young tableaus with k boxes
-        {
-            int k = -1;
-            bool include_top_row_n = true;
-            int n = 4; // top row length, if included
-
-            if (k > 0)
-            {
-
-                if (!include_top_row_n)
-                    n = 0;
-
-                k += n;
-
-                Console.Write("|");
-                foreach (List<int> part in IntegerFunctions.AllPartitions(k))
-                {
-                    char letter = 'a';
-                    for (int j = 0; j < part.Count; j++)
-                    {
-                        if (part[j] == 1 && j == 0) Console.Write("id");
-                        if (part[j] == 1) break;
-
-                        Console.Write("(");
-                        for (int i = 0; i < part[j]; i++)
-                        {
-                            Console.Write(letter);
-                            letter++;
-                        }
-                        Console.Write(")");
-                    }
-                    Console.Write("|");
-                }
-                Console.WriteLine("");
-                foreach (List<int> tableau in IntegerFunctions.AllPartitions(k - n))
-                {
-                    if (include_top_row_n)
-                        tableau.Insert(0, n);
-
-                    PrintList(tableau);
-                    foreach (List<int> part in IntegerFunctions.AllPartitions(k))
-                    {
-                        List<int> cycletype = IntegerFunctions.PartitionToNumCycles(part);
-                        Console.Write("|");
-                        string val = RepTheoryAlgs.FrobeniusFormula(tableau, cycletype).ToString();
-                        Console.Write(val);
-                        int len = 0;
-                        for (int j = 0; j < part.Count; j++)
-                        {
-                            if (j == 0 && part[j] == 1) len = 2;
-
-                            if (part[j] == 1) break;
-
-                            len += 2 + part[j];
-                        }
-
-                        for (int j = 0; j < len - val.Length; j++)
-                            Console.Write(' ');
-                    }
-                    Console.WriteLine("|");
-                }
-            }
-        }
-
-        // Characters of young tableaus with k boxes (top row tending toward infinity)
-        // in cycle choose notation
-        {
-            int k = -1;
-
-            if (k > 0)
-            {
-                foreach (List<int> part in IntegerFunctions.AllPartitions(k))
-                {
-
-                    Tuple<List<List<Tuple<int, int>>>, List<BigRational>> rslt = YoungDiagramToSymmPoly.YoungDiagramToChoose(part);
-
-                    bool is_wedge_sum = true;
-                    foreach (int i in part)
-                    {
-                        if (i != 1)
-                        {
-                            is_wedge_sum = false;
-                            break;
-                        }
-                    }
-                    if (is_wedge_sum)
-                    {
-                        PrintList(part);
-                        Tuple<List<List<Tuple<int, int>>>, List<BigRational>> flip_order = new(new(), new());
-                        for (int i = rslt.Item1.Count - 1; i >= 0; i--)
-                        {
-                            flip_order.Item1.Add(rslt.Item1[i]);
-                            flip_order.Item2.Add(rslt.Item2[i]);
-                        }
-                        Console.WriteLine(SymmPolyToValues.LinComboToString(flip_order));
-                        Console.WriteLine();
-                        continue;
-                    }
-
-                    // reduce:
-                    Tuple<List<List<Tuple<int, int>>>, List<BigRational>> reduced = new(new(), new());
-                    for (int j = 0; j <= k; j++)
-                    {
-                        foreach (List<int> p in IntegerFunctions.AllPartitions(j))
-                        {
-                            List<int> cycles = IntegerFunctions.PartitionToNumCycles(p);
-                            List<Tuple<int, int>> term = new();
-                            for (int i = 0; i < cycles.Count; i++)
-                            {
-                                if (cycles[i] == 0)
-                                    continue;
-                                term.Add(new Tuple<int, int>(i + 1, cycles[i]));
-                            }
-
-                            reduced.Item1.Add(term);
-                            reduced.Item2.Add(0);
-                        }
-                    }
-
-                    for (int j = 0; j < rslt.Item1.Count; j++)
-                    {
-                        bool same = false;
-                        for (int i = 0; i < reduced.Item1.Count; i++)
-                        {
-                            for (int l = 0; l < rslt.Item1[j].Count; l++)
-                            {
-                                if (rslt.Item1[j].Count != reduced.Item1[i].Count)
-                                    break;
-                                if (rslt.Item1[j][l].Item1 == reduced.Item1[i][l].Item1 &&
-                                    rslt.Item1[j][l].Item2 == reduced.Item1[i][l].Item2)
-                                {
-                                    same = true;
-                                    reduced.Item2[i] += rslt.Item2[j];
-                                    break;
-                                }
-                            }
-
-                        }
-                        if (same == false)
-                            Console.WriteLine("Bad ordering, something bad :(");
-                    }
-
-                    PrintList(part);
-                    Console.WriteLine(SymmPolyToValues.LinComboToString(reduced));
-                    Console.WriteLine();
-                }
-            }
-        }
-
-        // All young tableaus with i boxes to LaTeX table
-        {
-            int a = 0;
-            int b = 0;
-
-            int leastDegree = -30;
-            int perPage = 4;
-            int firstColWidth = 4; //cm
-            int secColWidth = 11; //cm
-            if (a < b)
-            {
-                Console.WriteLine("\\begin{center}");
-                Console.WriteLine("\\begin{tabular}{||Y{" + firstColWidth + "cm}|Y{" + secColWidth + "cm}|}");
-            }
-            int perPageCount = 0;
-            for (int i = a; i < b; i++)
-            {
-                foreach (List<int> part in IntegerFunctions.AllPartitions(i))
-                {
-                    // DELTE LATER
-                    if (part[0] != 1)
-                        continue;
-
-                    if (perPageCount >= perPage)
-                    {
-                        perPageCount = 0;
-                        Console.WriteLine("\\end{tabular}");
-                        Console.WriteLine("\\end{center}");
-                        Console.WriteLine("\\begin{center}");
-                        Console.WriteLine("\\begin{tabular}{||Y{" + firstColWidth + "cm}|Y{" + secColWidth + "cm}|}");
-                    }
-                    Console.Write("\\yng(");
-                    for (int j = 0; j < part.Count; j++)
-                    {
-                        Console.Write(part[j]);
-                        if (j != part.Count - 1)
-                            Console.Write(",");
-                        else
-                            Console.WriteLine(") & ");
-                    }
-
-                    Console.WriteLine(YoungToPoly(part, leastDegree).ToRevString(true) + " + \\dots");
-                    Console.WriteLine("\\\\");
-                    Console.WriteLine("\\hline");
-
-                    perPageCount++;
-                }
-            }
-            if (a < b)
-            {
-                Console.WriteLine("\\end{tabular}");
-                Console.WriteLine("\\end{center}");
-            }
-        }
-
-        // All young tableaus with i boxes
-        for (int i = 1; i < 6; i++)
+        // Print power series for all young tableaus with 1 <= i < a boxes
+        int a = 7;
+        for (int i = 1; i < a; i++)
         {
             foreach (List<int> part in IntegerFunctions.AllPartitions(i))
             {
                 PrintList(part);
-                Console.WriteLine(YoungToPoly(part, -15).ToRevString());
+                Console.WriteLine(YoungToPoly(part, lowestDegree).ToRevString());
+                Console.WriteLine();
             }
         }
 
+        int b = 0;
         // wedge powers
-        for (int i = 1; i < 0; i++)
+        for (int i = 1; i < b; i++)
         {
             Console.WriteLine(i + "th wedge power");
-            Console.WriteLine(WedgePowers(i, -20).ToRevString());
-            Console.WriteLine("");
+            Console.WriteLine(WedgePowers(i, lowestDegree).ToRevString());
+            Console.WriteLine();
         }
+    }
 
-        // two rows
-        for (int i = 1; i < 0; i++)
-        {
-            Console.WriteLine(YoungTwoRows(i, -20).ToRevString());
-            Console.WriteLine("");
-        }
 
-        // three rows (row first)
-        for (int i = 1; i < 0; i++)
+    /// <summary>
+    /// Saves the coefficients of the power series in q^{-1} to a results.txt file on the desktop.
+    /// Saved in a csv format. All coefficients are taken to be positive (since alternate in sign predictably)
+    /// Computed for all young tableau with a number of boxes k satisfying a <= k < b
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    public static void SaveToResultsTxt(int a, int b)
+    {
+        List<string> lines = new();
+        for (int i = a; i < b; i++)
         {
-            for (int j = 1; j <= i; j++)
+            foreach (List<int> part in IntegerFunctions.AllPartitions(i))
             {
-                Console.WriteLine(i + ", " + j + ":");
-                Console.WriteLine(YoungThreeRows(i, j, -20).ToRevString());
-                Console.WriteLine("");
+                PrintList(part);
+                LaurentPolynomial term = YoungToPoly(part, -5);
+
+                string line = "\"["; for (int j = 0; j < part.Count - 1; j++) line += part[j] + ", ";
+                line += part[^1] + "]\",";
+
+                for (int j = 0; j > -30; j--)
+                    line += term[j].abs() + ",";
+
+                line += term[-30].abs();
+
+                lines.Add(line);
             }
         }
 
-        // three rows (col first)
-        for (int i = 1; i < 0; i++)
+        // Set a variable to the Documents path.
+        string docPath =
+          Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+        // Write the string array to a new file named "WriteLines.txt".
+        using (StreamWriter outputFile = new StreamWriter(Path.Combine(docPath, "results.txt")))
         {
-            for (int j = i; j <= 7; j++)
-            {
-                Console.WriteLine(j + ", " + i + ":");
-                Console.WriteLine(YoungThreeRows(j, i, -20).ToRevString());
-                Console.WriteLine("");
-            }
+            foreach (string line in lines)
+                outputFile.WriteLine(line);
         }
     }
 
@@ -331,31 +89,6 @@ public class MainMethod
     {
         return SymmPolyToValues.SymmPolyToPoly(
             YoungDiagramToSymmPoly.WedgeToSymmetricPolynomial(k), smallestDegreePrinted);
-    }
-
-    /// <summary>
-    /// Prints the coefficients for the young diagram corresponding to (n, k).
-    /// </summary>
-    /// <param name="k"></param>
-    /// <param name="printCyclicBasis"></param>
-    /// <param name="smallestDegreePrinted"></param>
-    public static LaurentPolynomial YoungTwoRows(int k, int smallestDegreePrinted = -10)
-    {
-        return SymmPolyToValues.CyclicPolynomialBasisToPolynomial(
-            YoungDiagramToSymmPoly.YoungTwoRowsToChoose(k), smallestDegreePrinted);
-    }
-
-    /// <summary>
-    /// Prints the coefficients for the young diagram corresponding to (n, k1, k2).
-    /// </summary>
-    /// <param name="k1"></param>
-    /// <param name="k2"></param>
-    /// <param name="smallestDegreePrinted"></param>
-    /// <returns></returns>
-    public static LaurentPolynomial YoungThreeRows(int k1, int k2, int smallestDegreePrinted = -10)
-    {
-        return SymmPolyToValues.CyclicPolynomialBasisToPolynomial(
-            YoungDiagramToSymmPoly.YoungThreeRowsToChoose(k1, k2), smallestDegreePrinted);
     }
 
     /// <summary>
@@ -391,7 +124,7 @@ public class MainMethod
     }
 
     /// <summary>
-    /// Prints the list in a nice format
+    /// Prints a list in a nice format
     /// </summary>
     /// <param name="list"></param>s
     public static void PrintList<T>(List<T> list)

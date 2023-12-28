@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using IntegerMethods;
 using Polynomials;
-using SeanResearchComputations;
+using RepStabilityComputations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,20 +32,11 @@ namespace ResearchComputationsTests
         }
 
         [TestMethod]
-        public void TwoRowsTest1()
-        {
-            LaurentPolynomial result1 = MainMethod.YoungTwoRows(1, -10);
-            LaurentPolynomial result2 = MainMethod.WedgePowers(1, -10);
-
-            Assert.IsTrue(result1 == result2);
-        }
-
-        [TestMethod]
         public void TwoRowsTest2()
         {
             List<int> tableau = new List<int> { 7, 6 };
 
-            Tuple<List<List<Tuple<int, int>>>, List<BigRational>> terms = YoungDiagramToSymmPoly.YoungTwoRowsToChoose(tableau[1]);
+            Tuple<List<List<Tuple<int, int>>>, List<BigRational>> terms = YoungDiagramToSymmPoly.YoungDiagramToChoose(new List<int> { tableau[1] });
 
             foreach (List<int> part in IntegerFunctions.AllPartitions(tableau.Sum()))
             {
@@ -62,7 +53,7 @@ namespace ResearchComputationsTests
             List<int> tableau = new List<int> { 4, 2, 1 };
 
             Tuple<List<List<Tuple<int, int>>>, List<BigRational>> terms =
-                YoungDiagramToSymmPoly.YoungThreeRowsToChoose(tableau[1], tableau[2]);
+                YoungDiagramToSymmPoly.YoungDiagramToChoose(new List<int> { tableau[1], tableau[2] });
 
             foreach (List<int> part in IntegerFunctions.AllPartitions(tableau.Sum()))
             {
@@ -79,7 +70,7 @@ namespace ResearchComputationsTests
             List<int> tableau = new List<int> { 8, 5, 3 };
 
             Tuple<List<List<Tuple<int, int>>>, List<BigRational>> terms =
-                YoungDiagramToSymmPoly.YoungThreeRowsToChoose(tableau[1], tableau[2]);
+                YoungDiagramToSymmPoly.YoungDiagramToChoose(new List<int> { tableau[1], tableau[2] });
 
             foreach (List<int> part in IntegerFunctions.AllPartitions(tableau.Sum()))
             {
@@ -94,7 +85,7 @@ namespace ResearchComputationsTests
         public void ThreeRowsTest3()
         {
             Tuple<List<List<Tuple<int, int>>>, List<BigRational>> terms =
-                YoungDiagramToSymmPoly.YoungThreeRowsToChoose(1, 1);
+                YoungDiagramToSymmPoly.YoungDiagramToChoose(new List<int> { 1, 1 });
 
             Tuple<List<List<Tuple<int, int>>>, List<BigRational>> expterms =
                 SymmPolyToValues.SymmetricInChooseBasis(YoungDiagramToSymmPoly.WedgeToSymmetricPolynomial(2));
@@ -108,61 +99,6 @@ namespace ResearchComputationsTests
                 Assert.IsTrue(RepTheoryAlgs.ChooseFormToCharacter(terms, cycles) 
                     == RepTheoryAlgs.ChooseFormToCharacter(expterms, cycles));
             }
-        }
-
-        [TestMethod]
-        public void YoungDiagramToChooseTest1()
-        {
-            Tuple<List<List<Tuple<int, int>>>, List<BigRational>> expterms =
-                YoungDiagramToSymmPoly.YoungTwoRowsToChoose(4);
-
-            Tuple<List<List<Tuple<int, int>>>, List<BigRational>> terms =
-                YoungDiagramToSymmPoly.YoungDiagramToChoose(new() { 4 });
-
-            // since terms may not be reduced (i.e., same terms combined)
-            // easier to just evaluate each on some cycles and this will ensure they are the same
-            foreach (List<int> part in IntegerFunctions.AllPartitions(8))
-            {
-                List<int> cycles = IntegerFunctions.PartitionToNumCycles(part);
-
-                Assert.IsTrue(RepTheoryAlgs.ChooseFormToCharacter(terms, cycles)
-                    == RepTheoryAlgs.ChooseFormToCharacter(expterms, cycles));
-            }
-        }
-
-        [TestMethod]
-        public void YoungDiagramToChooseTest2()
-        {
-            Tuple<List<List<Tuple<int, int>>>, List<BigRational>> expterms =
-                YoungDiagramToSymmPoly.YoungThreeRowsToChoose(5, 3);
-
-            Tuple<List<List<Tuple<int, int>>>, List<BigRational>> terms =
-                YoungDiagramToSymmPoly.YoungDiagramToChoose(new() { 5, 3 });
-
-            // since terms may not be reduced (i.e., same terms combined)
-            // easier to just evaluate each on some cycles and this will ensure they are the same
-            foreach (List<int> part in IntegerFunctions.AllPartitions(9))
-            {
-                List<int> cycles = IntegerFunctions.PartitionToNumCycles(part);
-
-                Assert.IsTrue(RepTheoryAlgs.ChooseFormToCharacter(terms, cycles)
-                    == RepTheoryAlgs.ChooseFormToCharacter(expterms, cycles));
-            }
-        }
-
-        [TestMethod]
-        public void YoungDiagramToChooseTest3()
-        {
-            Tuple<List<List<Tuple<int, int>>>, List<BigRational>> expterms =
-                YoungDiagramToSymmPoly.YoungThreeRowsToChoose(4, 4);
-
-            Tuple<List<List<Tuple<int, int>>>, List<BigRational>> terms =
-                YoungDiagramToSymmPoly.YoungDiagramToChoose(new() { 4, 4 });
-
-            LaurentPolynomial result = SymmPolyToValues.CyclicPolynomialBasisToPolynomial(terms, -10);
-            LaurentPolynomial expresult = SymmPolyToValues.CyclicPolynomialBasisToPolynomial(expterms, -10);
-
-            Assert.IsTrue(result == expresult);
         }
 
         [TestMethod]

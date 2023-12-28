@@ -18,7 +18,7 @@
     <ProjectReference Include="..\IntegerMethods\IntegerMethods.csproj" />
     <ProjectReference Include="..\Polynomials\Polynomials.csproj" />
     <ProjectReference Include="..\RepTheory\RepTheory.csproj" />
-    <ProjectReference Include="..\SeanResearchComputations\SeanResearchComputations.csproj" />
+    <ProjectReference Include="..\SeanResearchComputations\RepStabComputations.csproj" />
   </ItemGroup>
 
 </Project>

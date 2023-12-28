@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32407.343
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SeanResearchComputations", "SeanResearchComputations\SeanResearchComputations.csproj", "{44D5E433-606F-41EC-A741-0EF05AADEA1A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepStabComputations", "SeanResearchComputations\RepStabComputations.csproj", "{44D5E433-606F-41EC-A741-0EF05AADEA1A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegerMethods", "IntegerMethods\IntegerMethods.csproj", "{6FBB8E9C-ABB9-4D5D-BA35-E12F66275EC6}"
 EndProject
@@ -13,9 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResearchComputationsTests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolynomialTests", "PolynomialTests\PolynomialTests.csproj", "{71D5F9B5-7930-49F3-BE5C-11B2F447ED80}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepTheory", "RepTheory\RepTheory.csproj", "{8F89496E-0A8A-41AF-A544-CBA31879B9F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepTheory", "RepTheory\RepTheory.csproj", "{8F89496E-0A8A-41AF-A544-CBA31879B9F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepTheoryTests", "RepTheoryTests\RepTheoryTests.csproj", "{45159AB9-22E4-4572-BADF-61A72270CAC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepTheoryTests", "RepTheoryTests\RepTheoryTests.csproj", "{45159AB9-22E4-4572-BADF-61A72270CAC1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

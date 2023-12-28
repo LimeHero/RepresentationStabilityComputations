@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using IntegerMethods;
 using Polynomials;
 
-namespace SeanResearchComputations
+namespace RepStabilityComputations
 {
     /// <summary>
     /// A static class which contains the functions needed to go from a symmetric polynomial
@@ -16,6 +16,12 @@ namespace SeanResearchComputations
     /// </summary>
     public class SymmPolyToValues
     {
+        // For memoization - after computing Choose basis to laurent polynomial for a single
+        // element List<Tuple<int, int>> a choose basis element, we save the result
+        // and reuse it over and over again.
+        private static List<List<Tuple<int, int>>> choose_to_symm_keys = new();
+        private static List<Tuple<LaurentPolynomial, int>> choose_to_symm_values = new();
+
         /// <summary>
         /// Wrapper function which takes the symmetric polynomial poly, expresses it in the Cyclic Polynomial Choose Basis,
         /// and then converts this basis to a Laurent Polynomial series, whose terms are approximated to a certain degree
@@ -189,7 +195,45 @@ namespace SeanResearchComputations
 
             for (int i = 0; i < symPolys.Count; i++)
             {
-                LaurentPolynomial nextTerm = new(coefficients[i]);
+                LaurentPolynomial nextTerm = new(1);
+
+                // memoization (checking if already computed)
+                int equal_index = -1;
+                {
+                    bool equal = true;
+                    for (int k = 0; k < choose_to_symm_keys.Count; k++)
+                    {
+                        equal = true;
+                        // if choose_to_symm_keys == symPolys[i]
+                        if (choose_to_symm_keys[k].Count != symPolys[i].Count)
+                            continue;
+
+                        for (int j = 0; j < choose_to_symm_keys[k].Count; j++)
+                        {
+                            if (choose_to_symm_keys[k][j].Item1 != symPolys[i][j].Item1 ||
+                                choose_to_symm_keys[k][j].Item2 != symPolys[i][j].Item2)
+                            {
+                                equal = false;
+                                break;
+                            }
+                        }
+
+                        if (equal)
+                        {
+                            equal_index = k;
+                            break;
+                        }
+                    }
+
+                    if (equal_index != -1 && choose_to_symm_values[equal_index].Item2 <= lowestDegree)
+                    {
+                        nextTerm = coefficients[i] * choose_to_symm_values[equal_index].Item1;
+                        nextTerm.RoundToNthDegree(lowestDegree);
+                        output += nextTerm;
+
+                        continue;
+                    }
+                }
                 for (int j = 0; j < symPolys[i].Count; j++)
                 {
                     //the choose portion of the expression
@@ -201,7 +245,22 @@ namespace SeanResearchComputations
                     nextTerm *= nextProd;
                 }
 
-                output += nextTerm;
+                // saving memoization
+                {
+                    if (equal_index != -1)
+                        choose_to_symm_values[equal_index] = new(nextTerm, lowestDegree);
+                    else
+                    {
+                        List<Tuple<int, int>> term = new();
+                        for (int l = 0; l < symPolys[i].Count; l++)
+                            term.Add(new(symPolys[i][l].Item1, symPolys[i][l].Item2));
+
+                        choose_to_symm_keys.Add(term);
+                        choose_to_symm_values.Add(new(nextTerm, lowestDegree));
+                    }
+                }
+
+                output += nextTerm * coefficients[i];
             }
 
             // multiply by 1 - q^{-1}

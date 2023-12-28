@@ -132,6 +132,15 @@ namespace IntegerMethods
         }
 
         /// <summary>
+        /// Returns absolute value of the big rational
+        /// </summary>
+        /// <returns></returns>
+        public BigRational abs()
+        {
+            return new BigRational(a < 0 ? -a : a, b < 0 ? -b : b);
+        }
+
+        /// <summary>
         /// Returns the string version of this rational number
         /// </summary>
         /// <returns></returns>

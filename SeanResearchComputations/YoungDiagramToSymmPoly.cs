@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 using IntegerMethods;
 using Polynomials;
 
-namespace SeanResearchComputations
+namespace RepStabilityComputations
 {
     public class YoungDiagramToSymmPoly
     {
+        private static List<List<int>> yng_to_choose_keys = new();
+        private static List<Tuple<List<List<Tuple<int, int>>>, List<BigRational>>> yng_to_choose_values = new();
+
         /// <summary>
         /// Returns the symmetric polynomial e_n - e_{n-1} + e_{n-2} - ... +- 1
         /// </summary>
@@ -30,128 +33,12 @@ namespace SeanResearchComputations
         }
 
         /// <summary>
-        /// Returns the symmetric polynomial (in choose basis) of the young diagram corresponding to (n, k).
-        /// </summary>
-        /// <param name="k"></param>
-        /// <param name="printCyclicBasis"></param>
-        /// <param name="smallestDegreePrinted"></param>
-        public static Tuple<List<List<Tuple<int, int>>>, List<BigRational>> YoungTwoRowsToChoose(int k)
-        {
-            Tuple<List<List<Tuple<int, int>>>, List<BigRational>> result = new(new(), new());
-
-            foreach (List<int> part in IntegerFunctions.AllPartitions(k))
-            {
-                result.Item1.Add(new());
-                result.Item2.Add(1);
-
-                for (int i = 0; i < part.Count; i++)
-                {
-                    int m = part[i];
-                    int j = 0; // number of elements equal to m
-                    while (i < part.Count && m == part[i])
-                    {
-                        i++;
-                        j++;
-                    }
-                    i--; // so we dont skip over next m
-
-
-
-                    result.Item1[result.Item1.Count - 1].Add(new(m, j));
-                }
-            }
-
-            foreach (List<int> part in IntegerFunctions.AllPartitions(k - 1))
-            {
-                result.Item1.Add(new());
-                result.Item2.Add(-1); // only difference
-
-                for (int i = 0; i < part.Count; i++)
-                {
-                    int m = part[i];
-                    int j = 0; // number of elements equal to m
-                    while (i < part.Count && m == part[i])
-                    {
-                        i++;
-                        j++;
-                    }
-                    i--; // so we dont skip over next m
-
-                    result.Item1[result.Item1.Count - 1].Add(new(m, j));
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Returns the symmetric polynomial (in choose basis) of the young diagram corresponding to (n, k1, k2).
-        /// </summary>
-        /// <param name="k1"></param>
-        /// <param name="k2"></param>
-        /// <param name="printCyclicBasis"></param>
-        /// <param name="smallestDegreePrinted"></param>
-        public static Tuple<List<List<Tuple<int, int>>>, List<BigRational>> YoungThreeRowsToChoose(int k1, int k2)
-        {
-            Tuple<List<List<Tuple<int, int>>>, List<BigRational>> result = new(new(), new());
-
-            //(x_1 - x_2)(x_1 - x_3)(x_2 - x_3) = (x_1^2x_2 + x_1x_3^2 + x_2^2x_3) - (x_1^2x_3 + x_1x_2^2 + x_2x_3^2)
-            List<Tuple<int, int[]>> discriminant = new();
-            // we need not add the x_1 coefficient, since tending toward infinity
-            discriminant.Add(new(1, new int[] { 1, 0 }));
-            discriminant.Add(new(1, new int[] { 0, 2 }));
-            discriminant.Add(new(1, new int[] { 2, 1 }));
-
-            discriminant.Add(new(-1, new int[] { 0, 1 }));
-            discriminant.Add(new(-1, new int[] { 2, 0 }));
-            discriminant.Add(new(-1, new int[] { 1, 2 }));
-
-            // all terms of the discriminant
-            foreach (Tuple<int, int[]> term in discriminant)
-            {
-                // [l_2 - discriminant_{x_2}, l_3 - discriminant_{x_3}]
-                int[] l = new int[] { k1 - term.Item2[0] + 1, k2 - term.Item2[1] }; // [a, b]
-
-                if (l[0] < 0 || l[1] < 0) continue;
-
-                foreach (List<int> parta in IntegerFunctions.AllPartitions(l[0]))
-                {
-                    foreach (List<int> partb in IntegerFunctions.AllPartitions(l[1]))
-                    {
-
-                        List<int> cyclesa = IntegerFunctions.PartitionToNumCycles(parta);
-                        List<int> cyclesb = IntegerFunctions.PartitionToNumCycles(partb);
-
-                        result.Item1.Add(new()); // next term added
-                        result.Item2.Add(term.Item1); // coefficient of determinant term
-
-                        int maxterm = Math.Max(parta[0], partb[0]);
-                        while (cyclesa.Count < maxterm)
-                            cyclesa.Add(0);
-                        while (cyclesb.Count < maxterm)
-                            cyclesb.Add(0);
-
-                        for (int i = 0; i < maxterm; i++)
-                        {
-                            if (cyclesa[i] == 0 && cyclesb[i] == 0)
-                                continue;
-
-                            result.Item1[^1].Add(new(i + 1, cyclesa[i] + cyclesb[i])); // [^1] means 1 from the end of list (last elmnt)
-                            result.Item2[^1] *= IntegerFunctions.Choose(cyclesa[i] + cyclesb[i], cyclesa[i]);
-                        }
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Returns the symmetric polynomial (in choose basis) of the young diagram corresponding to (n, k[0], k[1], ...)
+        /// Returns the characteristic polynomial (in choose basis) of the family of irreducible representations
+        /// given by young diagrams of the form (n, k[0], k[1], ... k[^1]) for n -> infty
         /// </summary>
         /// <param name="k"></param>
         /// <returns></returns>
-        public static Tuple<List<List<Tuple<int, int>>>, List<BigRational>> YoungDiagramToChoose(List<int> k)
+        public static Tuple<List<List<Tuple<int, int>>>, List<BigRational>> YoungDiagramToChoose(List<int> k, bool memoized = true)
         {
             // special cases
             {
@@ -177,6 +64,7 @@ namespace SeanResearchComputations
             List<Tuple<int, List<int>>> discriminant = new();
             // we need not add the x_0 coefficient, since tending toward infinity
             // we compute the discriminant binomials by taking determinant of vandermont matrix
+
             // we have to compute this sgn_change to account for the fact that we have the determinant
             // as \prod_{i<j} (x_i - x_j) in Frobenius formula, but as \prod_{i<j} (x_j - x_i) for det Vandermont matrix
             int sgn_change = ((k.Count * (k.Count + 1) / 2) % 2) == 0 ? 1 : -1;
@@ -184,50 +72,6 @@ namespace SeanResearchComputations
             {
                 List<int> currentterm = new() { }; for (int j = 0; j <= k.Count; j++) currentterm.Add(L[j]);
                 discriminant.Add(new(IntegerFunctions.Sgn(L) * sgn_change, currentterm));
-            }
-
-            //int numterms = k.Count * (k.Count + 1) / 2;
-            //int power2 = (int)IntegerFunctions.Pow(2, numterms);
-            //for (int i = 0; i < power2; i++)
-            //{
-            //    List<int> currentterm = new() { 0 }; for (int j = 0; j <= k.Count; j++) currentterm.Add(0);
-            //    List<int> bindig = IntegerFunctions.BinaryDigits(i);
-            //    while (bindig.Count < numterms)
-            //        bindig.Add(0);
-            //    int r = 0;
-            //    int pm1 = 1;
-            //    for (int n = 1; n < k.Count + 1; n++)
-            //    {
-            //        for (int m = 0; m < n; m++)
-            //        {
-            //            if (bindig[r] == 0)
-            //            {
-            //                pm1 *= -1;
-            //                currentterm[n - 1] += 1;
-            //            }
-            //            else
-            //                if (m > 0)
-            //                currentterm[m - 1] += 1;
-            //            r++;
-            //        }
-            //    }
-            //    discriminant.Add(new(pm1, currentterm));
-            //}
-
-            // Print discriminant
-            {
-                Console.WriteLine("DISCRIMINANT");
-                foreach (Tuple<int, List<int>> term in discriminant)
-                {
-                    Console.Write(term.Item1);
-                    for (int i = 0; i <= k.Count; i++)
-                    {
-                        Console.Write("x_" + i + "^" + term.Item2[i]);
-                    }
-                    Console.WriteLine();
-                }
-                Console.WriteLine("______");
-                Console.WriteLine("______");
             }
 
             // iterate through all terms of the discriminant
@@ -241,8 +85,53 @@ namespace SeanResearchComputations
                     l[i] += l.Count - 1 - i;
                 }
 
-                // if any l[i] is negative, the coefficient is zero.
-                foreach (int b in l) if (b < 0) continue;
+                //memoization lookup
+                if (memoized) {
+                    // check if this term has been done already
+                    int equal_index = -1;
+                    bool equal = true;
+                    for (int a = 0; a < yng_to_choose_keys.Count; a++)
+                    {
+                        equal = true;
+                        if (yng_to_choose_keys[a].Count != l.Count)
+                            continue;
+
+                        for (int b = 0; b < yng_to_choose_keys[a].Count; b++)
+                        {
+                            if (yng_to_choose_keys[a][b] != l[b])
+                            {
+                                equal = false;
+                                break;
+                            }
+                        }
+
+                        if (equal)
+                        {
+                            equal_index = a;
+                            break;
+                        }
+                    }
+
+                    // if so, equal_index = a
+                    if (equal_index != -1)
+                    {
+                        // add to result
+                        for (int a = 0; a < yng_to_choose_values[equal_index].Item1.Count; a++)
+                        {
+                            // result.Item1.Add(yng_to_choose_values[equal_index].Item1[a]);
+                            result.Item1.Add(new());
+                            for (int b = 0; b < yng_to_choose_values[equal_index].Item1[a].Count; b++)
+                                result.Item1[^1].Add(yng_to_choose_values[equal_index].Item1[a][b]);
+
+                            result.Item2.Add(yng_to_choose_values[equal_index].Item2[a] * term.Item1);
+                        }
+
+                        continue;
+                    }
+                }
+
+                // the result for this term of discriminant
+                Tuple<List<List<Tuple<int, int>>>, List<BigRational>> this_term_result = new(new(), new());
 
                 // All partitions of l[0], l[1], ... l[^1]
                 foreach (List<List<int>> parts in IntegerFunctions.AllPartitionLists(l))
@@ -284,8 +173,38 @@ namespace SeanResearchComputations
                         coef *= IntegerFunctions.MultinomialCoef(totalsum, ithterms);
                     }
 
-                    result.Item1.Add(choosePoly);
-                    result.Item2.Add(coef);
+                    this_term_result.Item1.Add(choosePoly);
+                    this_term_result.Item2.Add(coef);
+                }
+
+                // memoization saving
+                if (memoized) {
+                    // yng_to_choose_keys.Add(l);
+                    List<int> l_copy = new(l);
+                    yng_to_choose_keys.Add(l_copy);
+
+                    // yng_to_symm_values.Add(this_term_result);
+                    Tuple<List<List<Tuple<int, int>>>, List < BigRational >> this_term_result_copy = new(new(), new());
+                    for (int a = 0; a < this_term_result.Item1.Count; a++)
+                    {
+                        this_term_result_copy.Item2.Add(this_term_result.Item2[a] * term.Item1);
+                        // this_term_result_copy.Item1.Add(this_term_result.Item1[a]);
+                        List<Tuple<int, int>> cp = new();
+                        for (int b = 0; b < this_term_result.Item1[a].Count; b++)
+                            cp.Add(this_term_result.Item1[a][b]);
+                        this_term_result_copy.Item1.Add(this_term_result.Item1[a]);
+                    }
+                    yng_to_choose_values.Add(this_term_result_copy);
+                }
+
+                // add to final result
+                for (int a = 0; a < this_term_result.Item1.Count; a++)
+                {
+                    // result.Item1.Add(this_term_result.Item1[a]);
+                    result.Item1.Add(new());
+                    for (int b = 0; b < this_term_result.Item1[a].Count; b++)
+                        result.Item1[^1].Add(this_term_result.Item1[a][b]);
+                    result.Item2.Add(this_term_result.Item2[a]);
                 }
             }
 

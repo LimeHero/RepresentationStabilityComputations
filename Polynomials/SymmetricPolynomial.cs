@@ -7,19 +7,20 @@ using System.Text;
 namespace Polynomials
 {
     /// <summary>
-    /// Class representing a symmetric polynomial. 
+    /// Class representing a symmetric polynomial in an arbitrary number of variables (n -> infty)
     /// Every symmetric polynomial is represented by the coefficients 
     /// of each symmetric term (i.e., a_0 + a_1 sum t_i, a_2 sum t_it_j, a_3 sum t_i^2, ...)
+    /// For instance, sum t_i represents the formal sum (t_1 + t_2 + t_3 + ... )
     /// 
     /// We assume that the symmetric polynomials in this class are symmetric in infinite variables (since this is the application)
-    /// This is mainly important for polynomial multiplication.
+    /// This detail is mainly significant for symmetric polynomial multiplication.
     /// </summary>
     public class SymmetricPolynomial
     {
-        //this stores the ordering of the monomials for the coefficients of all symmetric polys
+        // this stores the ordering of the monomials for the coefficients of all symmetric polys
         public static List<List<int>> monomial { private set; get; } = new List<List<int>>();
 
-        //list of the coefficients of the symmetric poly
+        // list of the coefficients of the symmetric poly
         public List<BigRational> coefs { private set; get; }
 
         /// <summary>

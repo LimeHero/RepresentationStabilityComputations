@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using IntegerMethods;
 using Polynomials;
-using SeanResearchComputations;
+using RepStabilityComputations;
 using System;
 using System.Collections.Generic;
 

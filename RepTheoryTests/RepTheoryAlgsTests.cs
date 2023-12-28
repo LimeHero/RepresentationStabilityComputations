@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using IntegerMethods;
 using RepTheory;
 using System;
-using SeanResearchComputations;
+using RepStabilityComputations;
 using System.Linq;
 
 namespace RepTheoryTests

@@ -1,13 +1,13 @@
 # RepresentationStabilityComputations
 Code base to calculate limiting multiplicites of families of irreducible representations in the cohomology of complex configuration space. 
-In "MainMethod.cs", there are a number of useful computations contained in different code blocks. Each has a value "k" which can be set to -1 to ignore that block.
+In "MainMethod.cs", there are a number of useful computations contained in different code blocks. 
 
 The primary function of the code is provided by the function YoungToPoly(part, smallestDegree), which given a partition of n (a list of decreasing positive integers
 with sum n) returns an infinite power series in $q^{-1}$ representing the stable multiplicity of the family of irreducible partitions given by "part" in the
 cohomology of complex configuration space. For instance, the empty partition [] returns the stable multiplicity of the trivial representation, and the partition [1]
 of 1 returns the stable multiplicity of the standard representation. See https://math.uchicago.edu/~farb/papers/Pn-FqT.pdf for an introduction to representation
 stability and what this power series represents. 
-The infinite power series is expanded out to the optional "smallestDegree" term, so it will be cut off at $q^\text{-smallestDegree}$.
+The infinite power series is expanded out to the optional "smallestDegree" term, so it will be cut off at (and including) $q^\text{-smallestDegree}$.
 
 # Abstract:
 Representation stability was introduced to study mathematical structures which stabilize when viewed from a representation theoretic framework. 

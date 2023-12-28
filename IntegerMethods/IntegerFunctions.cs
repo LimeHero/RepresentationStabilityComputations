@@ -661,6 +661,7 @@ namespace IntegerMethods
         /// <returns></returns>
         public static IEnumerable<List<List<int>>> AllPartitionLists(List<int> l)
         {
+            foreach (int b in l) if (b < 0) yield break;
             if (l.Count <= 0)
                 yield break;
 

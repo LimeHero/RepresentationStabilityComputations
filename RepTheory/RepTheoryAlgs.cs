@@ -10,7 +10,7 @@ namespace RepTheory
         /// Computes the character of the representation defined by the given tableau (descending
         /// list of positive integers) evaluated on the given conjugacy class. The cycleType should
         /// be a list of positive integers [i_1, i_2, ..., i_n] such that the cycle type has
-        /// i_j j-cycles. 
+        /// i_j j-cycles. Used for testing.
         /// </summary>
         /// <param name="tableau"></param>
         /// <param name="cycles"></param>
@@ -83,7 +83,7 @@ namespace RepTheory
         /// <summary>
         /// Given a representation with character given by "terms", a polynomial in the number of each cycle,
         /// return the character evaluated on a certain set of cycles. A simple computation that is effectively a simple
-        /// form of frobenius for known characters.
+        /// form of frobenius for known characters. Used for testing.
         /// </summary>
         /// <param name="terms"></param>
         /// <param name="cycles"></param>

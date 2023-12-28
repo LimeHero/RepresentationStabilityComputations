@@ -5,6 +5,10 @@ using System.Text;
 
 namespace Polynomials
 {
+    /// <summary>
+    /// Ratio of polynomials of the form a/b, for a, b instances of the Polynomial class -
+    /// i.e., they are polynomials in a single variable with rational (BigRational) coefficients.
+    /// </summary>
     class RationalPolynomial
     {
         //fraction is a/b
